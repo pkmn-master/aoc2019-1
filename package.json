@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "day1": "node days/day1.js"
+    "day1": "node days/day1.js",
+    "day2": "node days/day2.js"
   },
   "keywords": [],
   "author": "",
