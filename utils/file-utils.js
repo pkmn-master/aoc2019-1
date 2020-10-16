@@ -10,7 +10,7 @@ const read = function (filePath) {
 
 const readLines = function (filePath) {
     return read(filePath)
-        .split('\r\n')
+        .split('\n')
         .filter(line => {
             // no empty lines
             return !!line;
