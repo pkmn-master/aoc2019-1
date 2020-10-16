@@ -35,13 +35,13 @@
  Here are a few more examples:
 
  R75,D30,R83,U83,L12,D49,R71,U7,L72
- U62,R66,U55,R34,D71,R55,D58,R83 
+ U62,R66,U55,R34,D71,R55,D58,R83
  = distance 159
- 
+
  R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51
- U98,R91,D20,R16,D67,R40,U7,R15,U6,R7 
+ U98,R91,D20,R16,D67,R40,U7,R15,U6,R7
  = distance 135
- 
+
  What is the Manhattan distance from the central port to the closest intersection?
 
  Your puzzle answer was 316.
@@ -70,13 +70,13 @@
  Here are the best steps for the extra examples from above:
 
  R75,D30,R83,U83,L12,D49,R71,U7,L72
- U62,R66,U55,R34,D71,R55,D58,R83 
+ U62,R66,U55,R34,D71,R55,D58,R83
  = 610 steps
- 
+
  R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51
- U98,R91,D20,R16,D67,R40,U7,R15,U6,R7 
+ U98,R91,D20,R16,D67,R40,U7,R15,U6,R7
  = 410 steps
- 
+
  What is the fewest combined steps the wires must take to reach an intersection?
 
  Your puzzle answer was 16368.
@@ -84,22 +84,12 @@
 
 const fileUtils = require('../utils/file-utils');
 
-const wirePaths = fileUtils
-    .readInputLines('day3.txt')
-    .map(wireInstruction => {
-        return wireInstruction
-            .split(',')
-            .map(instructions => {
-                return {
-                    direction: instructions.slice(0, 1),
-                    distance: parseInt(instructions.slice(1))
-                }
-            });
-    });
+const locationMap = {};
+const paths = [];
+const inputPaths = getInputPaths();
 
-const path1 = createPath(wirePaths[0]);
-const path2 = createPath(wirePaths[1]);
-const crossLocations = findCrossLocations(path1, path2);
+walkPaths(inputPaths);
+const crossLocations = findCrossLocations();
 
 partOne();
 partTwo();
@@ -118,14 +108,48 @@ function partTwo() {
     console.log('min travel distance', minTravelDistance);
 }
 
+function getInputPaths() {
+    return fileUtils
+        .readInputLines('day3.txt')
+        .map(wireInstruction => {
+            return wireInstruction
+                .split(',')
+                .map(instructions => {
+                    return {
+                        direction: instructions.slice(0, 1),
+                        distance: parseInt(instructions.slice(1))
+                    }
+                });
+        });
+}
+
+function walkPaths(_inputPaths) {
+    for (let i = 0; i < _inputPaths.length; i++) {
+        paths.push(walkPath(_inputPaths[i], i));
+    }
+}
+
+function logLocation(location) {
+    const hash = `${location.curX}-${location.curY}`;
+    if (!locationMap[hash]) {
+        locationMap[hash] = [];
+    }
+    if (!locationMap[hash].find(l => {
+        return l.pathId === location.pathId;
+    })) {
+        locationMap[hash].push(location);
+    }
+}
+
 /**
  *
  * @param wirePath []
+ * @param pathId number
  *
  * @return []
  */
-function createPath(wirePath) {
-    console.log('walking paths');
+function walkPath(wirePath, pathId) {
+    console.log('walking path', pathId);
     let location = {curX: 0, curY: 0};
     const locations = [
         location
@@ -133,7 +157,7 @@ function createPath(wirePath) {
     let distanceFromOrigin = 0;
     for (let i = 0; i < wirePath.length; i++) {
         const instruction = wirePath[i];
-        const instructionLocations = getRelativeLocations(location.curX, location.curY, instruction.direction, instruction.distance, distanceFromOrigin);
+        const instructionLocations = getRelativeLocations(pathId, location.curX, location.curY, instruction.direction, instruction.distance, distanceFromOrigin);
         distanceFromOrigin += instruction.distance;
         location = instructionLocations[instructionLocations.length - 1];
         locations.push(...instructionLocations);
@@ -148,7 +172,7 @@ function getPathLocationFromCrossLocation(pathInstance, location) {
     });
 }
 
-function getRelativeLocations(curX, curY, direction, distance, totalTravelDistanceFromOrigin) {
+function getRelativeLocations(pathId, curX, curY, direction, distance, totalTravelDistanceFromOrigin) {
     const locations = [];
     let travelDistanceFromOrigin = totalTravelDistanceFromOrigin;
     for (let i = 0; i < distance; i++) {
@@ -166,30 +190,28 @@ function getRelativeLocations(curX, curY, direction, distance, totalTravelDistan
                 curX += 1;
                 break;
         }
-        locations.push({
+        const location = {
+            pathId,
             curX,
             curY,
             travelDistanceFromOrigin: ++travelDistanceFromOrigin
-        });
+        };
+        logLocation(location);
+        locations.push(location);
     }
 
     return locations;
 }
 
-function findCrossLocations(path1, path2) {
+function findCrossLocations() {
     console.log('finding cross locations');
-    const crossLocations = [];
-    // start at 1 to ignore the 0,0 origin
-    for (let i = 1; i < path1.length; i++) {
-        const path1location = path1[i];
-        for (let k = 1; k < path2.length; k++) {
-            const path2location = path2[k];
-            if (isLocationMatch(path1location, path2location)) {
-                crossLocations.push(path1location);
-            }
-        }
-    }
-    return crossLocations;
+    return Object.keys(locationMap)
+        .filter(locationMapKey => {
+            return locationMap[locationMapKey].length > 1;
+        })
+        .map(locationMapKey => {
+            return locationMap[locationMapKey][0];
+        });
 }
 
 function isLocationMatch(location1, location2) {
@@ -210,15 +232,15 @@ function getCrossPathsMinTravelDistance() {
     console.log('getting cross path fewest steps');
 
     let minTravelDistance = null;
-    for(let i = 0; i < crossLocations.length; i++) {
+    for (let i = 0; i < crossLocations.length; i++) {
         const crossPathLocation = crossLocations[i];
-        const path1Location = getPathLocationFromCrossLocation(path1, crossPathLocation);
-        const path2Location = getPathLocationFromCrossLocation(path2, crossPathLocation);
-        
+        const path1Location = getPathLocationFromCrossLocation(paths[0], crossPathLocation);
+        const path2Location = getPathLocationFromCrossLocation(paths[1], crossPathLocation);
+
         const combinedTravelDistance = path1Location.travelDistanceFromOrigin + path2Location.travelDistanceFromOrigin;
         minTravelDistance = !minTravelDistance ? combinedTravelDistance : Math.min(minTravelDistance, combinedTravelDistance);
     }
-    
+
     return minTravelDistance;
 }
 
