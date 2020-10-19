@@ -45,31 +45,41 @@ const modules = fileUtils
         return parseInt(module);
     });
 
-const part1masses = modules.map(module => {
-    return calculateMass(module);
-});
+partOne();
+partTwo();
 
-const part1total = mathUtils.sum(part1masses);
+function partOne() {
+    const part1masses = modules.map(module => {
+        return calculateMass(module);
+    });
 
-const part2masses = modules.map(module => {
-    let mass = module;
-    let total = 0;
+    const part1total = mathUtils.sum(part1masses);
 
-    while (true) {
-        mass = calculateMass(mass);
-        if (mass <= 0) {
-            return total;
+    console.log('part1', part1total);
+}
+
+function partTwo() {
+    const part2masses = modules.map(module => {
+        let mass = module;
+        let total = 0;
+
+        while (true) {
+            mass = calculateMass(mass);
+            if (mass <= 0) {
+                return total;
+            }
+            total += mass;
         }
-        total += mass;
-    }
-});
+    });
 
-const part2total = mathUtils.sum(part2masses);
+    const part2total = mathUtils.sum(part2masses);
+    
+    console.log('part2', part2total);
+}
+
 
 function calculateMass(mass) {
     return Math.floor(mass / 3) - 2;
 }
 
-console.log('part1', part1total);
-console.log('part2', part2total);
 
