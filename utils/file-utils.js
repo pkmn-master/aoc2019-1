@@ -1,15 +1,25 @@
 const fs = require('fs');
 const path = require('path');
 
-const read = function (filePath) {
+/**
+ * 
+ * @param filePath
+ * @returns {string}
+ */
+exports.read = function (filePath) {
     return fs
         .readFileSync(filePath, {
             encoding: 'utf8'
         });
 }
 
-const readLines = function (filePath) {
-    return read(filePath)
+/**
+ * 
+ * @param filePath
+ * @returns {string[]}
+ */
+exports.readLines = function (filePath) {
+    return exports.read(filePath)
         .split('\n')
         .filter(line => {
             // no empty lines
@@ -27,12 +37,12 @@ const getInputFilePath = function (inputFileName) {
  * @param inputFileName the file to read
  */
 exports.readInputLines = function (inputFileName) {
-    return readLines(getInputFilePath(inputFileName));
+    return exports.readLines(getInputFilePath(inputFileName));
 }
 
 /**
  * Return file contents as a single string
  */
 exports.readInput = function (inputFileName) {
-    return read(getInputFilePath(inputFileName));
+    return exports.read(getInputFilePath(inputFileName));
 }
