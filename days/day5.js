@@ -6,11 +6,12 @@ const integers = fileUtils
     .split(',')
     .map(i => parseInt(i.toString()));
 
-const opCodes = computer.parseInput(integers);
+partOne();
 
 function partOne() {
-    
-}
+    const min = 0;
+    const max = 99;
 
-console.log(integers);
-console.log(opCodes);
+    const value = computer.calculateWithStop(integers, min, max, 19690720);
+    console.log('part 1', value);
+}

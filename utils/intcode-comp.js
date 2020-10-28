@@ -72,6 +72,14 @@ const getOperationParameterCount = function (operation) {
 
 /**
  *
+ * @param operation {number}
+ */
+const validOperation = function (operation) {
+    return Object.values(operations).indexOf(operation) !== -1;
+}
+
+/**
+ *
  * @param integers {number[]}
  * @returns {OpCodeInstruction[]}
  */
@@ -83,25 +91,17 @@ exports.parseInput = function (integers) {
         const paramStart = i + 1;
         const inputs = integers.slice(paramStart, paramStart + opCode.parameterCount);
 
+        if (!validOperation(opCode.operation)) {
+            continue;
+        }
+
         opCodeInstructions.push({
             opCode,
             inputs,
         })
     }
-    
+
     return opCodeInstructions;
-
-    // return listUtils
-    //     .splitIntoGroups(integers, 4)
-    //     .map(group => {
-    //         return {
-    //             opCode: toOpCode(group[0]),
-    //             input1Position: group[1],
-    //             input2Position: group[2],
-    //             outputPosition: group[3]
-    //         }
-    //     });
-
 }
 
 exports.calculate = function (integers, noun, verb) {
@@ -170,17 +170,30 @@ const storeValue = function (opCodeInstruction, integers, value) {
  * @returns {null|number|*}
  */
 const getValue = function (opCodeInstruction, integers) {
-    const value1ParamMode = opCodeInstruction.opCode.parameterModes[0];
-    const value2ParamMode = opCodeInstruction.opCode.parameterModes[1];
-    const value1 = value1ParamMode === paramModes.position ? integers[opCodeInstruction.inputs[0]] : opCodeInstruction.inputs[0];
-    const value2 = value2ParamMode === paramModes.position ? integers[opCodeInstruction.inputs[1]] : opCodeInstruction.inputs[1];
+    const values = getValues(opCodeInstruction, integers);
 
     switch (opCodeInstruction.opCode.operation) {
         case operations.add:
-            return value1 + value2;
+            return values[0] + values[1];
         case operations.multiply:
-            return value1 * value2;
+            return values[0] * values[1];
+        case operations.store:
+        case operations.output:
+            return values[0];
         case 99:
             return null;
     }
+}
+
+const getValues = function (opCodeInstruction, integers) {
+    const values = [];
+
+    for (let i = 0; i < opCodeInstruction.opCode.parameterModes.length && i < opCodeInstruction.inputs.length; i++) {
+        const paramMode = opCodeInstruction.opCode.parameterModes[i];
+        const value = paramMode === paramModes.position ? integers[opCodeInstruction.inputs[i]] : opCodeInstruction.inputs[i];
+
+        values.push(value);
+    }
+
+    return values;
 }
