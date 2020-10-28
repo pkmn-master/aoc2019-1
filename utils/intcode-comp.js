@@ -3,9 +3,8 @@ const _ = require('lodash');
 
 /**
  * @property operation {number}
- * @property parameter1Mode {paramModes}
- * @property parameter2Mode {paramModes}
- * @property parameter3Mode {paramModes}
+ * @property parameterCount {number}
+ * @property parameterModes {paramModes[]}
  */
 class OpCode {
 
@@ -13,9 +12,7 @@ class OpCode {
 
 /**
  * @property opCode {OpCode}
- * @property input1Position {number}
- * @property input2Position {number}
- * @property outputPosition {number}
+ * @property inputs {number[]}
  */
 class OpCodeInstruction {
 
@@ -23,7 +20,9 @@ class OpCodeInstruction {
 
 const operations = {
     add: 1,
-    multiply: 2
+    multiply: 2,
+    store: 3,
+    output: 4
 };
 
 const paramModes = {
@@ -48,12 +47,27 @@ const toOpCode = function (value) {
             .split('')
             .map(v => parseInt(v));
 
+    const _operation = parseInt(operation);
+
     return {
-        operation: parseInt(operation),
-        parameter1Mode: parameters[0],
-        parameter2Mode: parameters[1],
-        parameter3Mode: parameters[2],
+        operation: _operation,
+        parameterCount: getOperationParameterCount(_operation),
+        parameterModes: parameters
     };
+}
+
+/**
+ * @param operation {number}
+ */
+const getOperationParameterCount = function (operation) {
+    switch (operation) {
+        case operations.add:
+        case operations.multiply:
+            return 3;
+        case operations.store:
+        case operations.output:
+            return 1;
+    }
 }
 
 /**
@@ -61,17 +75,32 @@ const toOpCode = function (value) {
  * @param integers {number[]}
  * @returns {OpCodeInstruction[]}
  */
-exports.createOpCodes = function (integers) {
-    return listUtils
-        .splitIntoGroups(integers, 4)
-        .map(group => {
-            return {
-                opCode: toOpCode(group[0]),
-                input1Position: group[1],
-                input2Position: group[2],
-                outputPosition: group[3]
-            }
-        });
+exports.parseInput = function (integers) {
+    const opCodeInstructions = [];
+    let opCode;
+    for (let i = 0; i < integers.length; i += opCode.parameterCount + 1) {
+        opCode = toOpCode(integers[i]);
+        const paramStart = i + 1;
+        const inputs = integers.slice(paramStart, paramStart + opCode.parameterCount);
+
+        opCodeInstructions.push({
+            opCode,
+            inputs,
+        })
+    }
+    
+    return opCodeInstructions;
+
+    // return listUtils
+    //     .splitIntoGroups(integers, 4)
+    //     .map(group => {
+    //         return {
+    //             opCode: toOpCode(group[0]),
+    //             input1Position: group[1],
+    //             input2Position: group[2],
+    //             outputPosition: group[3]
+    //         }
+    //     });
 
 }
 
@@ -81,7 +110,7 @@ exports.calculate = function (integers, noun, verb) {
     _integers[1] = noun;
     _integers[2] = verb;
 
-    const opCodes = exports.createOpCodes(_integers);
+    const opCodes = exports.parseInput(_integers);
 
     for (let i = 0; i < opCodes.length; i++) {
         const opCode = opCodes[i];
@@ -103,7 +132,7 @@ exports.calculate = function (integers, noun, verb) {
  * @param max {number}
  * @param stop {number}
  *
- * @returns {number}
+ * @returns {number | null}
  */
 exports.calculateWithStop = function (integers, min, max, stop) {
     let value = 0;
@@ -127,26 +156,26 @@ exports.calculateWithStop = function (integers, min, max, stop) {
  * @param value number
  */
 const storeValue = function (opCodeInstruction, integers, value) {
-    switch (opCodeInstruction.opCode.parameter3Mode) {
+    switch (opCodeInstruction.opCode.parameterModes[2]) {
         case paramModes.position:
-            integers[opCodeInstruction.outputPosition] = value;
+            integers[opCodeInstruction.inputs[2]] = value;
             break;
     }
 }
 
 /**
  *
- * @param opCode {OpCodeInstruction}
+ * @param opCodeInstruction {OpCodeInstruction}
  * @param integers
  * @returns {null|number|*}
  */
-const getValue = function (opCode, integers) {
-    const value1Parameter = opCode.opCode.parameter1Mode;
-    const value2Parameter = opCode.opCode.parameter2Mode;
-    const value1 = value1Parameter === paramModes.position ? integers[opCode.input1Position] : opCode.input1Position;
-    const value2 = value2Parameter === paramModes.position ? integers[opCode.input2Position] : opCode.input2Position;
+const getValue = function (opCodeInstruction, integers) {
+    const value1ParamMode = opCodeInstruction.opCode.parameterModes[0];
+    const value2ParamMode = opCodeInstruction.opCode.parameterModes[1];
+    const value1 = value1ParamMode === paramModes.position ? integers[opCodeInstruction.inputs[0]] : opCodeInstruction.inputs[0];
+    const value2 = value2ParamMode === paramModes.position ? integers[opCodeInstruction.inputs[1]] : opCodeInstruction.inputs[1];
 
-    switch (opCode.opCode.operation) {
+    switch (opCodeInstruction.opCode.operation) {
         case operations.add:
             return value1 + value2;
         case operations.multiply:
