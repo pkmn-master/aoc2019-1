@@ -79,30 +79,22 @@ const integers = fileUtils
         return parseInt(val);
     });
 
+const nounConst = 12;
+const verbConst = 2;
 const part2StopValue = 19690720;
 
 partOne();
 partTwo();
 
 function partOne() {
-    const value = intCodeComp.calculate(integers, 12, 2);
+    const value = intCodeComp.calculate(integers, nounConst, verbConst);
     console.log('part 1', value);
 }
 
 function partTwo() {
-    let value = 0;
     const min = 0;
     const max = 99;
-
-    for (let noun = min; noun <= max; noun++) {
-        for (let verb = min; verb <= max; verb++) {
-            value = intCodeComp.calculate(integers, noun, verb);
-            if (value === part2StopValue) {
-                console.log('part 2', 100 * noun + verb);
-                return;
-            }
-        }
-    }
-    console.log('part 2 value not found');
-
+    
+    const value = intCodeComp.calculateWithStop(integers, min, max, part2StopValue);
+    console.log('part 2', value);
 }

@@ -77,7 +77,11 @@ function partTwo() {
     console.log('part2', part2total);
 }
 
-
+/**
+ * 
+ * @param mass {number}
+ * @returns {number}
+ */
 function calculateMass(mass) {
     return Math.floor(mass / 3) - 2;
 }
