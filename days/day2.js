@@ -70,7 +70,7 @@
  */
 
 const fileUtils = require('../utils/file-utils');
-const intCodeComp = require('../utils/intcode-comp');
+const IntCodeComputer = require('../classes/intcode-comp');
 
 const integers = fileUtils
     .readInput('day2.txt')
@@ -78,6 +78,7 @@ const integers = fileUtils
     .map(val => {
         return parseInt(val);
     });
+
 
 const nounConst = 12;
 const verbConst = 2;
@@ -87,14 +88,16 @@ partOne();
 partTwo();
 
 function partOne() {
-    const value = intCodeComp.calculate(integers, nounConst, verbConst);
+    const computer = new IntCodeComputer(integers);
+    const value = computer.execute(nounConst, verbConst);
     console.log('part 1', value);
 }
 
 function partTwo() {
+    const computer = new IntCodeComputer(integers);
     const min = 0;
     const max = 99;
     
-    const value = intCodeComp.calculateWithStop(integers, min, max, part2StopValue);
+    const value = computer.executeWithStop(min, max, part2StopValue);
     console.log('part 2', value);
 }

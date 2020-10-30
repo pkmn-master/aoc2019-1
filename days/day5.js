@@ -1,17 +1,16 @@
 const fileUtils = require('../utils/file-utils');
-const computer = require('../utils/intcode-comp');
+const IntCodeComputer = require('../classes/intcode-comp');
 
 const integers = fileUtils
-    .readInput('day5-example.txt')
+    .readInput('day5.txt')
     .split(',')
     .map(i => parseInt(i.toString()));
+
+const computer = new IntCodeComputer(integers);
 
 partOne();
 
 function partOne() {
-    const min = 0;
-    const max = 99;
-
-    const value = computer.calculateWithStop(integers, min, max, 19690720);
+    const value = computer.execute(12, 2);
     console.log('part 1', value);
 }
