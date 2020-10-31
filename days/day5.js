@@ -11,6 +11,6 @@ const computer = new IntCodeComputer(integers);
 partOne();
 
 function partOne() {
-    const value = computer.execute(12, 2);
+    const value = computer.execute();
     console.log('part 1', value);
 }

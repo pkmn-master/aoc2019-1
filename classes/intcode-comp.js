@@ -4,7 +4,6 @@ const OpCodeInstruction = require('./op-code-instruction');
 
 /**
  * @property integers {number[]}
- * @property opCodeInstructions {OpCodeInstruction[]}
  */
 class IntCodeComputer {
 
@@ -14,8 +13,6 @@ class IntCodeComputer {
      */
     constructor(integers) {
         this.integers = listUtils.copy(integers);
-
-        this.opCodeInstructions = this.parseInstructions();
     }
 
     /**
@@ -24,11 +21,11 @@ class IntCodeComputer {
      * @param verb {number | null}
      */
     execute(noun = null, verb = null) {
-        if (noun) {
+        if (!isNaN(noun)) {
             this.integers[1] = noun;
         }
 
-        if (verb) {
+        if (!isNaN(verb)) {
             this.integers[2] = verb;
         }
 
@@ -49,6 +46,7 @@ class IntCodeComputer {
         for (let noun = min; noun <= max; noun++) {
             for (let verb = min; verb <= max; verb++) {
                 value = this.execute(noun, verb);
+                console.log(value);
                 if (value === stop) {
                     return 100 * noun + verb;
                 }
@@ -61,20 +59,11 @@ class IntCodeComputer {
     /**
      */
     executeInstructions() {
-        for (let i = 0; i < this.opCodeInstructions.length; i++) {
-            this.opCodeInstructions[i].execute(this.integers);
+        let opCodeInstruction;
+        for (let i = 0; i < this.integers.length; i += opCodeInstruction.parameterCount() + 1) {
+            opCodeInstruction = OpCodeInstruction.fromInstructions(this.integers, i);
+            opCodeInstruction.execute(this.integers);
         }
-    }
-
-    parseInstructions() {
-        const opCodeInstructions = [];
-        let opCode;
-        for (let i = 0; i < this.integers.length; i += opCode.parameterCount() + 1) {
-            opCode = OpCodeInstruction.fromInstructions(this.integers, i);
-            opCodeInstructions.push(opCode);
-        }
-
-        return opCodeInstructions;
     }
 }
 
