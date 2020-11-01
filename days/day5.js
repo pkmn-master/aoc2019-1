@@ -9,8 +9,13 @@ const integers = fileUtils
 const computer = new IntCodeComputer(integers);
 
 partOne();
+partTwo();
 
 function partOne() {
-    const value = computer.execute();
+    const value = computer.executeSequential();
     console.log('part 1', value);
+}
+
+function partTwo() {
+    
 }

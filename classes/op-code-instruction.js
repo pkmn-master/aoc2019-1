@@ -110,7 +110,9 @@ class OpCodeInstruction {
                 this.store(integers, value, 0)
                 break;
             case OpCodeInstruction.operations.output:
-                console.log(this.getValue(integers));
+                if (value > 0) {
+                    console.log(value);
+                }
                 break;
 
         }

@@ -14,6 +14,16 @@ class IntCodeComputer {
     constructor(integers) {
         this.integers = listUtils.copy(integers);
     }
+    
+    setNounVerb(noun, verb) {
+        if (noun !== null) {
+            this.integers[1] = noun;
+        }
+
+        if (verb !== null) {
+            this.integers[2] = verb;
+        }
+    }
 
     /**
      *
@@ -21,15 +31,22 @@ class IntCodeComputer {
      * @param verb {number | null}
      */
     execute(noun = null, verb = null) {
-        if (!isNaN(noun)) {
-            this.integers[1] = noun;
-        }
-
-        if (!isNaN(verb)) {
-            this.integers[2] = verb;
-        }
+        this.setNounVerb(noun, verb);
 
         this.executeInstructions();
+
+        return this.integers[0];
+    }
+
+    /**
+     *
+     * @param noun {number | null}
+     * @param verb {number | null}
+     */
+    executeSequential(noun = null, verb = null) {
+        this.setNounVerb(noun, verb);
+
+        this.executeInstructionsSequential();
 
         return this.integers[0];
     }
@@ -46,7 +63,6 @@ class IntCodeComputer {
         for (let noun = min; noun <= max; noun++) {
             for (let verb = min; verb <= max; verb++) {
                 value = this.execute(noun, verb);
-                console.log(value);
                 if (value === stop) {
                     return 100 * noun + verb;
                 }
@@ -58,12 +74,30 @@ class IntCodeComputer {
 
     /**
      */
-    executeInstructions() {
+    executeInstructionsSequential() {
         let opCodeInstruction;
         for (let i = 0; i < this.integers.length; i += opCodeInstruction.parameterCount() + 1) {
             opCodeInstruction = OpCodeInstruction.fromInstructions(this.integers, i);
             opCodeInstruction.execute(this.integers);
         }
+    }
+
+    executeInstructions() {
+        const opCodeInstructions = this.parseInstructions();
+        for (let i = 0; i < opCodeInstructions.length; i++) {
+            opCodeInstructions[i].execute(this.integers);
+        }
+    }
+
+    parseInstructions() {
+        const opCodeInstructions = [];
+        let opCode;
+        for (let i = 0; i < this.integers.length; i += opCode.parameterCount() + 1) {
+            opCode = OpCodeInstruction.fromInstructions(this.integers, i);
+            opCodeInstructions.push(opCode);
+        }
+
+        return opCodeInstructions;
     }
 }
 
