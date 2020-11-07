@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const stringUtils = require('../utils/string-utils');
+const prompt = require('prompt-sync')();
 
 /**
  * @property operation {OpCodeInstruction.operations}
@@ -14,7 +15,11 @@ class OpCodeInstruction {
         add: 1,
         multiply: 2,
         store: 3,
-        output: 4
+        output: 4,
+        jumpIfTrue: 5,
+        jumpIfFalse: 6,
+        lessThan: 7,
+        equals: 8
     };
 
     static paramModes = {
@@ -44,10 +49,15 @@ class OpCodeInstruction {
         switch (operation) {
             case OpCodeInstruction.operations.add:
             case OpCodeInstruction.operations.multiply:
+            case OpCodeInstruction.operations.lessThan:
+            case OpCodeInstruction.operations.equals:
                 return 3;
             case OpCodeInstruction.operations.store:
             case OpCodeInstruction.operations.output:
                 return 1;
+            case OpCodeInstruction.operations.jumpIfTrue:
+            case OpCodeInstruction.operations.jumpIfFalse:
+                return 2;
         }
     }
 
@@ -65,12 +75,20 @@ class OpCodeInstruction {
             case OpCodeInstruction.operations.multiply:
                 return values[0] * values[1];
             case OpCodeInstruction.operations.store:
-                return 1;
-            // return prompt('specify ID: ');
+                // return 5;
+                return parseInt(prompt('specify ID: '));
             case OpCodeInstruction.operations.output:
                 return values[0];
             case 99:
                 return null;
+            case OpCodeInstruction.operations.jumpIfTrue:
+                return values[0] !== 0 ? values[1] : null;
+            case OpCodeInstruction.operations.jumpIfFalse:
+                return values[0] === 0 ? values[1] : null;
+            case OpCodeInstruction.operations.lessThan:
+                return values[0] < values[1] ? 1 : 0;
+            case OpCodeInstruction.operations.equals:
+                return values[0] === values[1] ? 1 : 0
         }
     }
 
@@ -96,26 +114,37 @@ class OpCodeInstruction {
 
     /**
      * @param integers {number[]}
-     * @returns {boolean}
+     * @param pointer {number}
+     * @returns {number} pointer
      */
-    execute(integers) {
+    execute(integers, pointer) {
+        // console.log(this);
         const value = this.getValue(integers);
 
         switch (this.operation) {
             case OpCodeInstruction.operations.add:
             case OpCodeInstruction.operations.multiply:
-                this.store(integers, value, 2)
+            case OpCodeInstruction.operations.lessThan:
+            case OpCodeInstruction.operations.equals:
+                this.store(integers, value, 2);
                 break;
             case OpCodeInstruction.operations.store:
-                this.store(integers, value, 0)
+                this.store(integers, value, 0);
                 break;
             case OpCodeInstruction.operations.output:
                 if (value > 0) {
                     console.log(value);
                 }
                 break;
-
+            case OpCodeInstruction.operations.jumpIfTrue:
+            case OpCodeInstruction.operations.jumpIfFalse:
+                if (value !== null) {
+                    return value;
+                }
+                break;
         }
+
+        return pointer + this.parameterCount() + 1;
     }
 
     /**

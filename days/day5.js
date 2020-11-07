@@ -6,16 +6,18 @@ const integers = fileUtils
     .split(',')
     .map(i => parseInt(i.toString()));
 
-const computer = new IntCodeComputer(integers);
-
 partOne();
 partTwo();
 
 function partOne() {
-    const value = computer.executeSequential();
-    console.log('part 1', value);
+    const computer = new IntCodeComputer(integers);
+    console.log('running part 1');
+    computer.executeSequential();
 }
 
 function partTwo() {
-    
+    const computer = new IntCodeComputer(integers);
+    console.log('running part 2');
+    computer.executeSequential();
+
 }

@@ -76,9 +76,10 @@ class IntCodeComputer {
      */
     executeInstructionsSequential() {
         let opCodeInstruction;
-        for (let i = 0; i < this.integers.length; i += opCodeInstruction.parameterCount() + 1) {
+        for (let i = 0; i < this.integers.length; ) {
+            // console.log('index', i);
             opCodeInstruction = OpCodeInstruction.fromInstructions(this.integers, i);
-            opCodeInstruction.execute(this.integers);
+            i = opCodeInstruction.execute(this.integers, i);
         }
     }
 
